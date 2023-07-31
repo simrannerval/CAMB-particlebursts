@@ -116,7 +116,11 @@ class InitialPowerLaw(InitialPower):
         ("pivot_scalar", c_double),
         ("pivot_tensor", c_double),
         ("As", c_double),
-        ("At", c_double)
+        ("At", c_double),
+        ("A_I", c_double),
+        ("k_I", c_double),
+        ("delta", c_double),
+        ("num_burst", c_int)
     ]
 
     _fortran_class_name_ = 'TInitialPowerLaw'
@@ -125,7 +129,8 @@ class InitialPowerLaw(InitialPower):
         self.set_params(**kwargs)
 
     def set_params(self, As=2e-9, ns=0.96, nrun=0, nrunrun=0.0, r=0.0, nt=None, ntrun=0.0,
-                   pivot_scalar=0.05, pivot_tensor=0.05, parameterization="tensor_param_rpivot"):
+                   pivot_scalar=0.05, pivot_tensor=0.05, parameterization="tensor_param_rpivot", A_I = 5.317e-11, 
+                   k_I = 1.806e-3, delta = 0.799, num_burst = 10):
         r"""
         Set parameters using standard power law parameterization. If nt=None, uses inflation consistency relation.
 
@@ -153,6 +158,10 @@ class InitialPowerLaw(InitialPower):
         self.ns = ns
         self.nrun = nrun
         self.nrunrun = nrunrun
+        self.A_I = A_I
+        self.k_I = k_I
+        self.delta = delta
+        self.num_burst = num_burst
         if nt is None:
             # set from inflationary consistency
             if ntrun:
