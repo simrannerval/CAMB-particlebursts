@@ -4,7 +4,7 @@
 #     or to "recfast hyrec" to support HYREC-2
 POWERSPECTRUM_FILES ?= InitialPower
 REIONIZATION_FILES ?= reionization
-RECOMBINATION_FILES ?= recfast
+RECOMBINATION_FILES ?= recfast cosmorec
 NONLINEAR_FILES     ?= halofit SecondOrderPK
 DARKENERGY_FILES  ?= DarkEnergyFluid DarkEnergyPPF PowellMinimize DarkEnergyQuintessence
 
@@ -60,7 +60,8 @@ ifneq (,$(findstring cosmorec,$(RECOMBINATION_FILES)))
 camb: libCosmoRec.a
 python: libCosmoRec.a
 FFLAGS += -DCOSMOREC
-COSMOREC_PATH ?=../../CosmoRec/
+# COSMOREC_PATH ?=../../CosmoRec/
+COSMOREC_PATH ?= /home/simran/CosmoRec.v2.0.3b/
 GSL_LINK ?=-lgsl -lgslcblas
 LIBLINK += -L$(COSMOREC_PATH) -lCosmoRec $(GSL_LINK) -lstdc++
 endif
