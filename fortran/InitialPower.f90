@@ -54,7 +54,7 @@
             real(dl) :: pivot_tensor = 0.05_dl
             real(dl) :: As = 1._dl
             real(dl) :: At = 1._dl !A_T at k_0_tensor if tensor_parameterization==tensor_param_AT
-            real(dl) :: A_I = 1.9e-9_dl !Amplitude for particle burst
+            real(dl) :: A_I = 0._dl!1.9e-9_dl !Amplitude for particle burst
             real(dl) :: k_I = 3.2e-3_dl !pivot scale for particle burst
             real(dl) :: delta = 0.75_dl !density of particle bursts features
             integer :: num_burst = 10 !number of particle bursts
