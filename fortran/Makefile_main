@@ -4,7 +4,7 @@
 #     or to "recfast hyrec" to support HYREC-2
 POWERSPECTRUM_FILES ?= InitialPower
 REIONIZATION_FILES ?= reionization
-RECOMBINATION_FILES ?= recfast cosmorec
+RECOMBINATION_FILES ?= recfast
 NONLINEAR_FILES     ?= halofit SecondOrderPK
 DARKENERGY_FILES  ?= DarkEnergyFluid DarkEnergyPPF PowellMinimize DarkEnergyQuintessence
 
