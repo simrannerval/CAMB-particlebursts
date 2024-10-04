@@ -228,7 +228,7 @@ def set_params_cosmomc(p, num_massive_neutrinos=1, neutrino_hierarchy='degenerat
     :param p: dictionary of cosmomc parameters (e.g. from getdist.types.BestFit's getParamDict() function)
     :param num_massive_neutrinos: usually 1 if fixed mnu=0.06 eV, three if mnu varying
     :param neutrino_hierarchy: hierarchy
-    :param halofit_version: name of the soecific Halofit model to use for non-linear modelling
+    :param halofit_version: name of the specific Halofit model to use for non-linear modelling
     :param dark_energy_model: ppf or fluid dark energy model
     :param lmax: lmax for accuracy settings
     :param lens_potential_accuracy: lensing accuracy parameter
@@ -237,7 +237,7 @@ def set_params_cosmomc(p, num_massive_neutrinos=1, neutrino_hierarchy='degenerat
     """
     pars = inpars or model.CAMBparams()
     if p.get('alpha1', 0) or p.get('Aphiphi', 1) != 1:
-        raise ValueError('Parameter not currrently supported by set_params_cosmomc')
+        raise ValueError('Parameter not currently supported by set_params_cosmomc')
 
     pars.set_dark_energy(w=p.get('w', -1), wa=p.get('wa', 0), dark_energy_model=dark_energy_model)
     pars.Reion.set_extra_params(deltazrei=p.get('deltazrei', None))
@@ -338,8 +338,12 @@ def get_matter_power_interpolator(params, zmin=0, zmax=10, nz_step=100, zs=None,
        print('Power spectrum at z=0.5, k/h=0.1/Mpc is %s (Mpc/h)^3 '%(PK.P(0.5, 0.1)))
 
     For a description of outputs for different var1, var2 see :ref:`transfer-variables`.
-    If you already have a :class:`~.results.CAMBdata` result object, you can instead
-    use :meth:`~.results.CAMBdata.get_matter_power_interpolator`.
+
+    This function re-calculates results from scratch with the given parameters.
+    If you already have a :class:`~.results.CAMBdata` result object, you should instead
+    use :meth:`~.results.CAMBdata.get_matter_power_interpolator`
+    (call :meth:`.model.CAMBparams.set_matter_power` as need to set up the required ranges for the matter power
+    before calling get_results).
 
     :param params: :class:`.model.CAMBparams` instance
     :param zmin: minimum z (use 0 or smaller than you want for good interpolation)
