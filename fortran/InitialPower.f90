@@ -54,10 +54,10 @@
             real(dl) :: pivot_tensor = 0.05_dl
             real(dl) :: As = 1._dl
             real(dl) :: At = 1._dl !A_T at k_0_tensor if tensor_parameterization==tensor_param_AT
-            real(dl) :: A_I = 0._dl!1.9e-9_dl !Amplitude for particle burst
-            real(dl) :: k_I = 3.2e-3_dl !pivot scale for particle burst
-            real(dl) :: delta = 0.75_dl !density of particle bursts features
-            integer :: num_burst = 10 !number of particle bursts
+            real(dl) :: A_osc = 0.01_dl!1.9e-9_dl !Amplitude for oscillations
+            real(dl) :: omega_osc = 10._dl !frequency for oscillations
+            real(dl) :: phi_osc = 0._dl !phase shift for oscillations (will be multiplied by 2pi)
+            integer :: spacing_osc = 1 !linear (1) or logorithmic (2) spacing for oscillations
             real(dl), private :: curv = 0._dl !curvature parameter
         contains
         procedure :: Init => TInitialPowerLaw_Init
@@ -123,13 +123,13 @@
         end subroutine TInitialPowerLaw_Init
     
         function TInitialPowerLaw_ScalarPower(this, k)
+        use constants
         class(TInitialPowerLaw) :: this
         real(dl), intent(in) :: k
         real(dl) TInitialPowerLaw_ScalarPower
         real(dl) lnrat
         real(dl) lnrat_part
-        real(dl) f_1, f_2, s, c, x, A_II, k_I_t
-        integer :: i
+        real(dl) delta_pk
         !ScalarPower = const for scale invariant spectrum
         !The normalization is defined so that for adiabatic perturbations the gradient of the 3-Ricci
         !scalar on co-moving hypersurfaces receives power
@@ -145,35 +145,33 @@
         !For the isocurvture velocity mode ScalarPower is the power in the neutrino heat flux.
     
         ! write(*,*) 'A_s', this%As
-        ! write(*,*) 'k_I', this%k_I
-        ! write(*,*) 'delta', this%delta
-        ! write(*,*) 'num_burst', this%num_burst
+        ! write(*,*) 'omega_osc', this%omega_osc
+        ! write(*,*) 'phi_osc', this%phi_osc
+        ! write(*,*) 'spacing_osc', this%spacing_osc
 
-        ! write(*,*) 'A_I', this%A_I
+        ! write(*,*) 'A_osc', this%A_osc
 
         lnrat = log(k/this%pivot_scalar)
         TInitialPowerLaw_ScalarPower = this%As * exp(lnrat * (this%ns - 1 + &
             &             lnrat * (this%nrun / 2 + this%nrunrun / 6 * lnrat)))
     
-        do i = 1, this%num_burst
-    
-            k_I_t = exp((i - 1)*this%delta)*this%k_I
-            lnrat_part = log(k/k_I_t)
-    
-            x = k/k_I_t
-    
-            call cisia ( x, c, s )
-    
-            f_1 = (sin(x) - s)**2/(x**3)
-    
-            f_2 = (-2.*x*cos(2.*x) + (1 - x**2)*sin(2.*x))/(x**3)
+        if (this%spacing_osc == 1) then
             
-            A_II = 2.9e-6_dl*this%A_I**(5.d0/7.d0)*(log(this%A_I**(4/7)) + 24) !from eq 2.14 of 2202.05862
+            !from eqs 27 - 30 from 2309.17287 
+            delta_pk = this%A_osc*sin(this%omega_osc*(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
     
     
-            TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower + &
-            this%A_I*f_1/0.11 +  A_II*f_2/0.85
-        end do
+            TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
+        end if
+
+        if (this%spacing_osc == 2) then
+            
+            !from eqs 27 - 30 from 2309.17287 
+            delta_pk = this%A_osc*sin(this%omega_osc*log(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
+    
+    
+            TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
+        end if
     
         end function TInitialPowerLaw_ScalarPower
     
@@ -228,10 +226,10 @@
     
         WantTensors = Ini%Read_Logical('get_tensor_cls', .false.)
     
-        call Ini%Read('A_I', this%A_I)
-        call Ini%Read('k_I', this%k_I)
-        call Ini%Read('delta', this%delta)
-        call Ini%Read('num_burst', this%num_burst)
+        call Ini%Read('A_osc', this%A_osc)
+        call Ini%Read('omega_osc', this%omega_osc)
+        call Ini%Read('phi_osc', this%phi_osc)
+        call Ini%Read('spacing_osc', this%spacing_osc)
     
         call Ini%Read('pivot_scalar', this%pivot_scalar)
         call Ini%Read('pivot_tensor', this%pivot_tensor)

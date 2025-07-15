@@ -93,7 +93,7 @@ class CambTest(unittest.TestCase):
         self.assertEqual(params, {'ombh2', 'deltazrei', 'omnuh2', 'tau', 'omk', 'zrei', 'thetastar', 'nrunrun',
                                   'meffsterile', 'nnu', 'ntrun', 'HMCode_A_baryon', 'HMCode_eta_baryon',
                                   'HMCode_logT_AGN', 'cosmomc_theta', 'YHe', 'wa', 'cs2', 'H0', 'mnu', 'Alens',
-                                  'TCMB', 'ns', 'nrun', 'As', 'nt', 'r', 'w', 'omch2', 'num_burst', 'k_I', 'delta', 'A_I'})
+                                  'TCMB', 'ns', 'nrun', 'As', 'nt', 'r', 'w', 'omch2', 'spacing_osc', 'omega_osc', 'phi_osc', 'A_osc'})
         params2 = camb.get_valid_numerical_params(dark_energy_model='AxionEffectiveFluid')
         self.assertEqual(params2.difference(params), {'fde_zc', 'w_n', 'zc', 'theta_i'})
 

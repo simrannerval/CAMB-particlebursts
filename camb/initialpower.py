@@ -117,10 +117,10 @@ class InitialPowerLaw(InitialPower):
         ("pivot_tensor", c_double),
         ("As", c_double),
         ("At", c_double),
-        ("A_I", c_double),
-        ("k_I", c_double),
-        ("delta", c_double),
-        ("num_burst", c_int)
+        ("A_osc", c_double),
+        ("omega_osc", c_double),
+        ("phi_osc", c_double),
+        ("spacing_osc", c_int)
     ]
 
     _fortran_class_name_ = 'TInitialPowerLaw'
@@ -129,8 +129,8 @@ class InitialPowerLaw(InitialPower):
         self.set_params(**kwargs)
 
     def set_params(self, As=2e-9, ns=0.96, nrun=0, nrunrun=0.0, r=0.0, nt=None, ntrun=0.0,
-                   pivot_scalar=0.05, pivot_tensor=0.05, parameterization="tensor_param_rpivot", A_I=0,
-                   k_I=1.806e-3, delta=0.799, num_burst=10):
+                   pivot_scalar=0.05, pivot_tensor=0.05, parameterization="tensor_param_rpivot", A_osc=0.01,
+                   omega_osc=0.01, phi_osc=0.01, spacing_osc=1):
         r"""
         Set parameters using standard power law parameterization. If nt=None, uses inflation consistency relation.
 
@@ -158,10 +158,10 @@ class InitialPowerLaw(InitialPower):
         self.ns = ns
         self.nrun = nrun
         self.nrunrun = nrunrun
-        self.A_I = A_I
-        self.k_I = k_I
-        self.delta = delta
-        self.num_burst = num_burst
+        self.A_osc = A_osc
+        self.omega_osc = omega_osc
+        self.phi_osc = phi_osc
+        self.spacing_osc = spacing_osc
         if nt is None:
             # set from inflationary consistency
             if ntrun:
