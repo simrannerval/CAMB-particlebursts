@@ -57,7 +57,8 @@
             real(dl) :: A_osc = 0.01_dl!1.9e-9_dl !Amplitude for oscillations
             real(dl) :: omega_osc = 10._dl !frequency for oscillations
             real(dl) :: phi_osc = 0._dl !phase shift for oscillations (will be multiplied by 2pi)
-            integer :: spacing_osc = 1 !linear (1) or logorithmic (2) spacing for oscillations
+            integer :: spacing_osc = 1 !linear (1), logarithmic (2), logarithmic with running (3) spacing for oscillations
+            real(dl) :: alpha_rf_osc = 0._dl !coefficient for running frequency
             real(dl), private :: curv = 0._dl !curvature parameter
         contains
         procedure :: Init => TInitialPowerLaw_Init
@@ -148,6 +149,7 @@
         ! write(*,*) 'omega_osc', this%omega_osc
         ! write(*,*) 'phi_osc', this%phi_osc
         ! write(*,*) 'spacing_osc', this%spacing_osc
+        ! write(*,*) 'alpha_rf_osc', this%alpha_rf_osc
 
         ! write(*,*) 'A_osc', this%A_osc
 
@@ -168,6 +170,15 @@
             
             !from eqs 27 - 30 from 2309.17287 
             delta_pk = this%A_osc*sin(this%omega_osc*log(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
+    
+    
+            TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
+        end if
+
+        if (this%spacing_osc == 3) then
+            
+            !from eqs 27 - 30 from 2309.17287 modified by the running term from eqs 50 from 1807.06211
+            delta_pk = this%A_osc*sin(this%omega_osc*log(k/this%pivot_scalar)*(1 + this%alpha_rf_osc*log(k/this%pivot_scalar)) + 2.*const_pi*this%phi_osc)
     
     
             TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
@@ -230,6 +241,7 @@
         call Ini%Read('omega_osc', this%omega_osc)
         call Ini%Read('phi_osc', this%phi_osc)
         call Ini%Read('spacing_osc', this%spacing_osc)
+        call Ini%Read('alpha_rf_osc', this%alpha_rf_osc)
     
         call Ini%Read('pivot_scalar', this%pivot_scalar)
         call Ini%Read('pivot_tensor', this%pivot_tensor)
