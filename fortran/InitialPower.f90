@@ -159,8 +159,8 @@
     
         if (this%spacing_osc == 1) then
             
-            !from eqs 27 - 30 from 2309.17287 
-            delta_pk = this%A_osc*sin(this%omega_osc*(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
+            !from eq 56 from 1807.06211
+            delta_pk = this%A_osc*cos(this%omega_osc*(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
     
     
             TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
@@ -168,8 +168,8 @@
 
         if (this%spacing_osc == 2) then
             
-            !from eqs 27 - 30 from 2309.17287 
-            delta_pk = this%A_osc*sin(this%omega_osc*log(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
+            !from eq 56 from 1807.06211
+            delta_pk = this%A_osc*cos(this%omega_osc*log(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
     
     
             TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
@@ -177,8 +177,8 @@
 
         if (this%spacing_osc == 3) then
             
-            !from eqs 27 - 30 from 2309.17287 modified by the running term from eqs 50 from 1807.06211
-            delta_pk = this%A_osc*sin(this%omega_osc*log(k/this%pivot_scalar)*(1 + this%alpha_rf_osc*log(k/this%pivot_scalar)) + 2.*const_pi*this%phi_osc)
+            !from eq 56 from 1807.06211modified by the running term from eqs 50 from 1807.06211
+            delta_pk = this%A_osc*cos(this%omega_osc*log(k/this%pivot_scalar)*(1 + this%alpha_rf_osc*log(k/this%pivot_scalar)) + 2.*const_pi*this%phi_osc)
     
     
             TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
