@@ -166,9 +166,13 @@
     
             f_1 = (sin(x) - s)**2/(x**3)
     
-            f_2 = (-2.*x*cos(2.*x) + (1 - x**2)*sin(2.*x))/(x**3)
+            if (abs(x) < 1e-5_dl) then
+                f_2 = 2._dl/3._dl + (4._dl/15._dl)*x**2 - (4._dl/35._dl)*x**4 + (8._dl/567._dl)*x**6
+            else
+                f_2 = (-2._dl*x*cos(2._dl*x) + (1._dl - x**2)*sin(2._dl*x)) / x**3
+            end if
             
-            A_II = 2.9e-6_dl*this%A_I**(5.d0/7.d0)*(log(this%A_I**(4/7)) + 24) !from eq 2.14 of 2202.05862
+            A_II = 2.9e-6_dl*this%A_I**(5.d0/7.d0)*(log(this%A_I**(4.d0/7.d0)) + 24) !from eq 2.14 of 2202.05862
     
     
             TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower + &
