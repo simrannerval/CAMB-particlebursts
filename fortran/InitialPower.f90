@@ -155,29 +155,33 @@
         TInitialPowerLaw_ScalarPower = this%As * exp(lnrat * (this%ns - 1 + &
             &             lnrat * (this%nrun / 2 + this%nrunrun / 6 * lnrat)))
     
-        do i = 1, this%num_burst
+        if (this%A_I > 0._dl) then
+        
+            do i = 1, this%num_burst
     
-            k_I_t = exp((i - 1)*this%delta)*this%k_I
-            lnrat_part = log(k/k_I_t)
-    
-            x = k/k_I_t
-    
-            call cisia ( x, c, s )
-    
-            f_1 = (sin(x) - s)**2/(x**3)
-    
-            if (abs(x) < 1e-5_dl) then
-                f_2 = 2._dl/3._dl + (4._dl/15._dl)*x**2 - (4._dl/35._dl)*x**4 + (8._dl/567._dl)*x**6
-            else
-                f_2 = (-2._dl*x*cos(2._dl*x) + (1._dl - x**2)*sin(2._dl*x)) / x**3
-            end if
-            
-            A_II = 2.9e-6_dl*this%A_I**(5.d0/7.d0)*(log(this%A_I**(4.d0/7.d0)) + 24) !from eq 2.14 of 2202.05862
-    
-    
-            TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower + &
-            this%A_I*f_1/0.11 +  A_II*f_2/0.85
-        end do
+                k_I_t = exp((i - 1)*this%delta)*this%k_I
+                lnrat_part = log(k/k_I_t)
+        
+                x = k/k_I_t
+        
+                call cisia ( x, c, s )
+        
+                f_1 = (sin(x) - s)**2/(x**3)
+        
+                if (abs(x) < 1e-5_dl) then
+                    f_2 = 2._dl/3._dl + (4._dl/15._dl)*x**2 - (4._dl/35._dl)*x**4 + (8._dl/567._dl)*x**6
+                else
+                    f_2 = (-2._dl*x*cos(2._dl*x) + (1._dl - x**2)*sin(2._dl*x)) / x**3
+                end if
+                
+                A_II = 2.9e-6_dl*this%A_I**(5.d0/7.d0)*(log(this%A_I**(4.d0/7.d0)) + 24) !from eq 2.14 of 2202.05862
+        
+        
+                TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower + &
+                this%A_I*f_1/0.11 +  A_II*f_2/0.85
+            end do
+
+        end if
     
         end function TInitialPowerLaw_ScalarPower
     
