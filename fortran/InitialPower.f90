@@ -156,34 +156,37 @@
         lnrat = log(k/this%pivot_scalar)
         TInitialPowerLaw_ScalarPower = this%As * exp(lnrat * (this%ns - 1 + &
             &             lnrat * (this%nrun / 2 + this%nrunrun / 6 * lnrat)))
-    
-        if (this%spacing_osc == 1) then
-            
-            !from eq 56 from 1807.06211
-            delta_pk = this%A_osc*cos(this%omega_osc*(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
-    
-    
-            TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
-        end if
+        
+        
+        if (this%A_osc > 0._dl) then
+            if (this%spacing_osc == 1) then
+                
+                !from eq 56 from 1807.06211
+                delta_pk = this%A_osc*cos(this%omega_osc*(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
+        
+        
+                TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
+            end if
 
-        if (this%spacing_osc == 2) then
-            
-            !from eq 56 from 1807.06211
-            delta_pk = this%A_osc*cos(this%omega_osc*log(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
-    
-    
-            TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
-        end if
+            if (this%spacing_osc == 2) then
+                
+                !from eq 56 from 1807.06211
+                delta_pk = this%A_osc*cos(this%omega_osc*log(k/this%pivot_scalar) + 2.*const_pi*this%phi_osc)
+        
+        
+                TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
+            end if
 
-        if (this%spacing_osc == 3) then
-            
-            !from eq 56 from 1807.06211modified by the running term from eqs 50 from 1807.06211
-            delta_pk = this%A_osc*cos(this%omega_osc*log(k/this%pivot_scalar)*(1 + this%alpha_rf_osc*log(k/this%pivot_scalar)) + 2.*const_pi*this%phi_osc)
-    
-    
-            TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
+            if (this%spacing_osc == 3) then
+                
+                !from eq 56 from 1807.06211modified by the running term from eqs 50 from 1807.06211
+                delta_pk = this%A_osc*cos(this%omega_osc*log(k/this%pivot_scalar)*(1 + this%alpha_rf_osc*log(k/this%pivot_scalar)) + 2.*const_pi*this%phi_osc)
+        
+        
+                TInitialPowerLaw_ScalarPower = TInitialPowerLaw_ScalarPower*(1.d0 + delta_pk)
+            end if
         end if
-    
+        
         end function TInitialPowerLaw_ScalarPower
     
     

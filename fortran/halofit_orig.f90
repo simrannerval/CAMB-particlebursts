@@ -52,7 +52,6 @@
     use Transfer
     use constants
     use config
-    use InitialPower, only: TInitialPowerLaw
     implicit none
     private
 
@@ -119,8 +118,6 @@
         REAL(dl) :: A_baryon=3.13
         REAL(dl) :: eta_baryon=0.603
         REAL(dl) :: logT_AGN=7.8
-        REAL(dl) :: A_osc, omega_osc, phi_osc, pivot_scalar, alpha_rf_osc
-        INTEGER  :: spacing_osc
     END TYPE HM_cosmology
 
     TYPE HM_tables
@@ -143,22 +140,14 @@
     ! HMcode linear P(k) numerical parameters
     ! AM: Jul 19: Updated nk_pk_interpolation from 128 to 512
     ! AM: Dec 20: Calculation time and accuracy are especially sensive to these parameters
-    ! LOGICAL, PARAMETER :: rebin_pk=.TRUE.             ! Should the linear P(k) be rebinned?
-    ! REAL(dl), PARAMETER :: kmin_pk_interpolation=1d-3 ! Minimum wavenumber if rebinning [h/Mpc]
-    ! REAL(dl), PARAMETER :: kmax_pk_interpolation=1d2  ! Maximum wavenumber if rebinning [h/Mpc]
-    ! INTEGER, PARAMETER :: nk_pk_interpolation=512     ! Number of points in k if rebining
-    ! LOGICAL, PARAMETER :: plin_extrap=.FALSE.         ! Extrapolate at high-k via thoery or simple power law
-    ! INTEGER, PARAMETER :: iorder_pk_interpolation=1   ! Polynomial order for P(k) interpolation
-    ! INTEGER, PARAMETER :: ifind_pk_interpolation=1    ! Finding scheme for P(k) interpolation (if rebin_pk=True)
-    ! INTEGER, PARAMETER :: imeth_pk_interpolation=1    ! Method for P(k) interpolation
-    LOGICAL, PARAMETER :: rebin_pk=.FALSE.            ! <--- FALSE (Use native CAMB grid)
-    REAL(dl), PARAMETER :: kmin_pk_interpolation=1d-3 
-    REAL(dl), PARAMETER :: kmax_pk_interpolation=1d2  
-    INTEGER, PARAMETER :: nk_pk_interpolation=512     
-    LOGICAL, PARAMETER :: plin_extrap=.FALSE.         
-    INTEGER, PARAMETER :: iorder_pk_interpolation=3   ! <--- MUST BE 3
-    INTEGER, PARAMETER :: ifind_pk_interpolation=3    ! <--- MUST BE 3 (Binary search)
-    INTEGER, PARAMETER :: imeth_pk_interpolation=2    ! <--- MUST BE 2 (Lagrange)
+    LOGICAL, PARAMETER :: rebin_pk=.TRUE.             ! Should the linear P(k) be rebinned?
+    REAL(dl), PARAMETER :: kmin_pk_interpolation=1d-3 ! Minimum wavenumber if rebinning [h/Mpc]
+    REAL(dl), PARAMETER :: kmax_pk_interpolation=1d2  ! Maximum wavenumber if rebinning [h/Mpc]
+    INTEGER, PARAMETER :: nk_pk_interpolation=512     ! Number of points in k if rebining
+    LOGICAL, PARAMETER :: plin_extrap=.FALSE.         ! Extrapolate at high-k via thoery or simple power law
+    INTEGER, PARAMETER :: iorder_pk_interpolation=1   ! Polynomial order for P(k) interpolation
+    INTEGER, PARAMETER :: ifind_pk_interpolation=1    ! Finding scheme for P(k) interpolation (if rebin_pk=True)
+    INTEGER, PARAMETER :: imeth_pk_interpolation=1    ! Method for P(k) interpolation
 
     ! HMcode dewiggle numerical parameters
     REAL, PARAMETER :: kmin_wiggle=5e-3    ! Minimum wavenumber to calulate wiggle [Mpc/h]
@@ -553,7 +542,6 @@
     TYPE(MatterPowerData) :: CAMB_Pk
     REAL(dl) :: z, k
     REAL(dl) :: p1h, p2h, pfull, plin
-    REAL(dl) :: plin_smooth, pfull_smooth, delta_pk, plin_full, damp_factor
     REAL(dl), ALLOCATABLE :: p_den(:,:), p_num(:,:)
     INTEGER :: i, j, ii, nk, nz
     REAL :: t1, t2
@@ -612,7 +600,6 @@
         !Sets the current redshift from the table
         z=CAMB_Pk%Redshifts(j)
 
-
         IF(this%halofit_version==halofit_mead2020_feedback) THEN
 
             ! Loop over numerator, denominator and HMcode to make feedback response model
@@ -627,21 +614,13 @@
                 if (global_error_flag/=0) return
 
                 !Loop over k values and calculate P(k)
-                !$OMP PARALLEL DO DEFAULT(SHARED), private(k,plin_smooth,pfull_smooth,p1h,p2h,delta_pk,plin_full,damp_factor,pfull)
+                !$OMP PARALLEL DO DEFAULT(SHARED), private(k,plin,pfull,p1h,p2h)
                 DO i=1,nk
                     k=exp(CAMB_Pk%log_kh(i))
-                    plin_smooth = p_lin(k,z,0,cosi)
-                    ! plin=p_lin(k,z,0,cosi)
-                    CALL this%halomod(k,p1h,p2h,pfull_smooth,plin_smooth,lut,cosi)
-                    delta_pk = get_delta_pk(k, cosi)
-                    plin_full = plin_smooth * (1.0_dl + delta_pk)
-
-                    damp_factor = exp(-0.5_dl * (k * lut%sigv)**2)
-                    pfull = pfull_smooth * (1.0_dl + delta_pk * damp_factor)
-
-
+                    plin=p_lin(k,z,0,cosi)
+                    CALL this%halomod(k,p1h,p2h,pfull,plin,lut,cosi)
                     IF(this%imead==3) THEN
-                        CAMB_Pk%nonlin_ratio(i,j)=sqrt(pfull/plin_full)
+                        CAMB_Pk%nonlin_ratio(i,j)=sqrt(pfull/plin)
                     ELSE IF(this%imead==4) THEN
                         p_den(i,j)=pfull
                     ELSE IF(this%imead==5) THEN
@@ -659,19 +638,12 @@
             if (global_error_flag/=0) return
 
             !Loop over k values and calculate P(k)
-            !$OMP PARALLEL DO DEFAULT(SHARED), private(k,plin_smooth,pfull_smooth,p1h,p2h,delta_pk,plin_full,damp_factor,pfull)
+            !$OMP PARALLEL DO DEFAULT(SHARED), private(k,plin,pfull,p1h,p2h)
             DO i=1,nk
                 k=exp(CAMB_Pk%log_kh(i))
-                ! plin=p_lin(k,z,0,cosi)
-                plin_smooth = p_lin(k,z,0,cosi)
-                CALL this%halomod(k,p1h,p2h,pfull_smooth,plin_smooth,lut,cosi)
-
-                delta_pk = get_delta_pk(k, cosi)
-                plin_full = plin_smooth * (1.0_dl + delta_pk)
-                
-                damp_factor = exp(-0.5_dl * (k * lut%sigv)**2)
-                pfull = pfull_smooth * (1.0_dl + delta_pk * damp_factor)
-                CAMB_Pk%nonlin_ratio(i,j)=sqrt(pfull/plin_full)
+                plin=p_lin(k,z,0,cosi)
+                CALL this%halomod(k,p1h,p2h,pfull,plin,lut,cosi)
+                CAMB_Pk%nonlin_ratio(i,j)=sqrt(pfull/plin)
             END DO
             !$OMP END PARALLEL DO
 
@@ -923,30 +895,6 @@
 
     END SUBROUTINE fill_table
 
-    FUNCTION get_delta_pk(k_h, cosm)
-        REAL(dl) :: get_delta_pk
-        REAL(dl), INTENT(IN) :: k_h  ! k in units of h/Mpc
-        TYPE(HM_cosmology), INTENT(IN) :: cosm
-        REAL(dl) :: arg, k_phys
-        REAL(dl), PARAMETER :: pi=pi_HM
-
-        get_delta_pk = 0.0_dl
-        if (cosm%A_osc > 0.0_dl) then
-            ! Convert k from h/Mpc to 1/Mpc to match InitialPower
-            k_phys = k_h * cosm%h
-            
-            if (cosm%spacing_osc == 1) then
-                arg = cosm%omega_osc*(k_phys/cosm%pivot_scalar)
-            else if (cosm%spacing_osc == 2) then
-                arg = cosm%omega_osc*log(k_phys/cosm%pivot_scalar)
-            else if (cosm%spacing_osc == 3) then
-                arg = cosm%omega_osc*log(k_phys/cosm%pivot_scalar)*(1.0_dl + cosm%alpha_rf_osc*log(k_phys/cosm%pivot_scalar))
-            end if
-            
-            get_delta_pk = cosm%A_osc * cos(arg + 2.0_dl*const_pi*cosm%phi_osc)
-        end if
-    END FUNCTION get_delta_pk
-
     SUBROUTINE fill_plintab(iz,cosm,CAMB_PK)
     !Fills internal HMcode HM_tables for the linear power spectrum at z=0
     TYPE(MatterPowerData), INTENT(IN) :: CAMB_PK
@@ -955,7 +903,6 @@
     INTEGER :: i
     REAL(dl) :: z, g
     REAL(dl), ALLOCATABLE :: k(:), Pk(:), Pkc(:)
-    REAL(dl) :: Pk_full, delta_pk
     REAL(dl), PARAMETER :: pi=pi_HM
     REAL(dl), PARAMETER :: kmin=kmin_pk_interpolation
     REAL(dl), PARAMETER :: kmax=kmax_pk_interpolation
@@ -1002,20 +949,11 @@
     IF(HM_verbose) WRITE(*,*) 'LINEAR POWER: z of input:', z
     index_cache = 1
     !Fill power table, both cold- and all-matter
-    !$OMP PARALLEL DO DEFAULT(SHARED), FIRSTPRIVATE(index_cache), private(Pk_full, delta_pk)
+    !$OMP PARALLEL DO DEFAULT(SHARED), FIRSTPRIVATE(index_cache)
     DO i=1,nk
-        ! !Take the power from the current redshift choice
-        ! Pk(i)=MatterPowerData_k(CAMB_PK,k(i),iz, index_cache)*(k(i)**3/(2*pi**2))
-        ! Pkc(i)=Pk(i)*Tcb_Tcbnu_ratio(k(i),z,cosm)**2
-        ! Take the full, wiggled power spectrum from CAMB
-        Pk_full = MatterPowerData_k(CAMB_PK,k(i),iz, index_cache)*(k(i)**3/(2*pi**2))
-        
-        ! Calculate the primordial oscillation
-        delta_pk = get_delta_pk(k(i), cosm)
-
-        ! Divide it out to give HMcode a perfectly smooth baseline to integrate
-        Pk(i) = Pk_full / (1.0_dl + delta_pk)
-        Pkc(i) = Pk(i)*Tcb_Tcbnu_ratio(k(i),z,cosm)**2
+        !Take the power from the current redshift choice
+        Pk(i)=MatterPowerData_k(CAMB_PK,k(i),iz, index_cache)*(k(i)**3/(2*pi**2))
+        Pkc(i)=Pk(i)*Tcb_Tcbnu_ratio(k(i),z,cosm)**2
     END DO
 
     IF(HM_verbose) WRITE(*,*) 'LINEAR POWER: Delta2_min:', Pk(1)
@@ -1123,16 +1061,6 @@
     ELSE IF(this%halofit_version==halofit_mead2020_feedback) THEN
         cosm%logT_AGN = this%HMcode_logT_AGN
     END IF
-
-    select type(IP => State%CP%InitPower)
-    class is (TInitialPowerLaw)
-        cosm%A_osc        = IP%A_osc
-        cosm%omega_osc    = IP%omega_osc
-        cosm%phi_osc      = IP%phi_osc
-        cosm%spacing_osc  = IP%spacing_osc
-        cosm%pivot_scalar = IP%pivot_scalar
-        cosm%alpha_rf_osc = IP%alpha_rf_osc
-    end select
 
     !Write out cosmological parameters if necessary
     IF(HM_verbose) WRITE(*,*) 'HM_cosmology: Om_m:', cosm%om_m
